@@ -1,5 +1,6 @@
 import requests
 import csv
+from ntiva_constants import IGNORE
 
 
 def write_out(headers_list, input_list, output_file):
@@ -84,7 +85,7 @@ def process_export(client_id, client_secret, exclusion_out, allowed_out):
     if whoami_resp.status_code == 200:
         whoami = whoami_resp.json()
         tenant_id  = whoami["id"]
-        api_host   = whoami["apiHosts"]["dataRegion"]  # e.g. https://api-us01.central.sophos.com
+        api_host   = whoami["apiHosts"]["dataRegion"]
         print(f"Tenant ID : {tenant_id}")
         print(f"API Host  : {api_host}")
         # Add tenant header — required for all subsequent calls
@@ -117,7 +118,13 @@ def process_export(client_id, client_secret, exclusion_out, allowed_out):
                 item.get("description", ""),
                 item.get("scanMode", ""),   # realTime, scheduled, or both — for path types
             ]
-            export_list.append(row)
+            ignore = 0
+            for ignore_type in IGNORE:
+                for cell in row:
+                    if ignore_type.casefold() in cell.casefold():
+                        ignore += 1
+            if ignore == 0:
+                export_list.append(row)
 
 
     write_out(exclusion_headers_csv, export_list, exclusion_out)
@@ -136,4 +143,4 @@ def process_export(client_id, client_secret, exclusion_out, allowed_out):
     else:
         print(f"Failed to retrieve allowed apps: {allowed_apps_response.status_code} – {allowed_apps_response.text}")
 
-    write_out(allowed_headers,   allowed_list, allowed_out)
+    write_out(allowed_headers, allowed_list, allowed_out)
