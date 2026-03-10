@@ -1,6 +1,6 @@
 import requests
 import csv
-from ntiva_constants import IGNORE
+from ntiva_constants import EX_IGNORE, AL_IGNORE
 
 
 def write_out(headers_list, input_list, output_file):
@@ -62,7 +62,7 @@ def process_export(sophos_id, sophos_secret, exclusions_out, allowed_out, status
     update("Authenticating...")
 
     exclusion_headers = ['type', 'value']
-    allowed_headers   = ['name', 'allowed_by']
+    allowed_headers = ['path', 'type', 'comment', 'created_at', 'updated_at']
     params = {"pageSize": 100, "pageTotal": "true"}
 
     #Get Access Token
@@ -127,7 +127,7 @@ def process_export(sophos_id, sophos_secret, exclusions_out, allowed_out, status
                 item.get("scanMode", ""),   # realTime, scheduled, or both — for path types
             ]
             ignore = 0
-            for ignore_type in IGNORE:
+            for ignore_type in EX_IGNORE:
                 for cell in row:
                     if ignore_type.casefold() in cell.casefold():
                         ignore += 1
@@ -141,14 +141,27 @@ def process_export(sophos_id, sophos_secret, exclusions_out, allowed_out, status
     # Pull Global Allowed Applications
     allowed_apps_url = f"{api_host}/endpoint/v1/settings/allowed-items"
     allowed_apps_response = requests.get(allowed_apps_url, headers=headers)
+
     if allowed_apps_response.status_code == 200:
         allowed_apps_data = allowed_apps_response.json()
-        print("\n--- Global Allowed Applications ---")
-        for app in allowed_apps_data.get("items", []):
-            row = [app.get("name"), app.get("allowed_by")]
-            print(f"  Name: {row[0]}, Allowed by: {row[1]}")
-            allowed_list.append(row)
+        for item in allowed_apps_data.get("items", []):
+            ignore = 0
+            row = [
+                item.get("properties", {}).get("path"),
+                item.get("type"),
+                item.get("comment", ""),
+                item.get("createdAt", ""),
+                item.get("updatedAt", ""),
+            ]
+            for ignore_type in AL_IGNORE:
+                for cell in row:
+                    if ignore_type.casefold() in cell.casefold():
+                        ignore += 1
+            if ignore == 0:
+                allowed_list.append(row)
+
     else:
         print(f"Failed to retrieve allowed apps: {allowed_apps_response.status_code} – {allowed_apps_response.text}")
+
 
     write_out(allowed_headers, allowed_list, allowed_out)
