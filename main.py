@@ -1,7 +1,7 @@
-from PyQt6 import QtCore, QtGui, QtWidgets
+from PyQt6 import QtWidgets
 import sys
 from main_window import Ui_MainWindow
-from functions import *
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)

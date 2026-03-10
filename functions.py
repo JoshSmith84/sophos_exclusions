@@ -50,9 +50,16 @@ def extract_value(item):
         or ""
     )
 
-def process_export(client_id, client_secret, exclusion_out, allowed_out):
+def process_export(sophos_id, sophos_secret, exclusions_out, allowed_out, status_callback=None):
+
+    def update(msg):
+        if status_callback:
+            status_callback(msg)
+
     export_list = []
     allowed_list = []
+
+    update("Authenticating...")
 
     exclusion_headers = ['type', 'value']
     allowed_headers   = ['name', 'allowed_by']
@@ -62,8 +69,8 @@ def process_export(client_id, client_secret, exclusion_out, allowed_out):
     auth_url = "https://id.sophos.com/api/v2/oauth2/token"
     auth_data = {
         "grant_type":    "client_credentials",
-        "client_id":     client_id,
-        "client_secret": client_secret,
+        "client_id":     sophos_id,
+        "client_secret": sophos_secret,
         "scope":         "token",
     }
     response = requests.post(auth_url, data=auth_data)
@@ -94,6 +101,7 @@ def process_export(client_id, client_secret, exclusion_out, allowed_out):
         print(f"Whoami failed: {whoami_resp.status_code} – {whoami_resp.text}")
         exit()
 
+    update("Fetching exclusions...")
 
     #  Pull Global Scanning Exclusions
     exclusion_endpoints = {
@@ -126,8 +134,8 @@ def process_export(client_id, client_secret, exclusion_out, allowed_out):
             if ignore == 0:
                 export_list.append(row)
 
-
-    write_out(exclusion_headers_csv, export_list, exclusion_out)
+    update("Writing files...")
+    write_out(exclusion_headers_csv, export_list, exclusions_out)
 
 
     # Pull Global Allowed Applications
