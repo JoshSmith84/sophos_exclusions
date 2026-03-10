@@ -12,18 +12,21 @@ class Worker(QObject):
         self.sophos_secret = sophos_secret
         self.exclusions_out = exclusions_out
         self.allowed_out = allowed_out
+        self.exclude_count = 0
+        self.allowed_count = 0
 
     def run(self):
         try:
             self.status.emit("Authenticating...")
             # pass the status signal into process_export so it can emit updates
-            process_export(
-                self.sophos_id,
-                self.sophos_secret,
-                self.exclusions_out,
-                self.allowed_out,
-                status_callback=self.status.emit
-            )
-            self.finished.emit()
+            self.exclude_count, self.allowed_count = process_export(
+                                                                    self.sophos_id,
+                                                                    self.sophos_secret,
+                                                                    self.exclusions_out,
+                                                                    self.allowed_out,
+                                                                    status_callback=self.status.emit
+                                                                )
+            if self.exclude_count:
+                self.finished.emit()
         except Exception as e:
             self.error.emit(str(e))

@@ -56,8 +56,10 @@ def process_export(sophos_id, sophos_secret, exclusions_out, allowed_out, status
         if status_callback:
             status_callback(msg)
 
-    export_list = []
+    exclude_list = []
     allowed_list = []
+    exclude_count = 0
+    allowed_count = 0
 
     update("Authenticating...")
 
@@ -74,6 +76,7 @@ def process_export(sophos_id, sophos_secret, exclusions_out, allowed_out, status
         "scope":         "token",
     }
     response = requests.post(auth_url, data=auth_data)
+    headers= ''
     if response.status_code == 200:
         access_token = response.json()["access_token"]
         headers = {
@@ -83,7 +86,8 @@ def process_export(sophos_id, sophos_secret, exclusions_out, allowed_out, status
         print("Authentication successful.")
     else:
         print(f"Authentication failed: {response.status_code} – {response.text}")
-        exit()
+        update("Authentication failed! Check your Client ID or Client Secret")
+        return None, None
 
 
     # get tenantId + correct regional API host
@@ -98,8 +102,10 @@ def process_export(sophos_id, sophos_secret, exclusions_out, allowed_out, status
         # Add tenant header — required for all subsequent calls
         headers["X-Tenant-ID"] = tenant_id
     else:
-        print(f"Whoami failed: {whoami_resp.status_code} – {whoami_resp.text}")
-        exit()
+        whoami_error = f"Whoami failed: {whoami_resp.status_code} – {whoami_resp.text}"
+        print(whoami_error)
+        update(whoami_error)
+
 
     update("Fetching exclusions...")
 
@@ -112,7 +118,7 @@ def process_export(sophos_id, sophos_secret, exclusions_out, allowed_out, status
     }
 
     exclusion_headers_csv = ["exclusion_type", "path", "value", "description"]
-    export_list = []
+    exclude_list = []
 
     print("\n--- Global Scanning Exclusions ---")
     for excl_type, url in exclusion_endpoints.items():
@@ -132,12 +138,14 @@ def process_export(sophos_id, sophos_secret, exclusions_out, allowed_out, status
                     if ignore_type.casefold() in cell.casefold():
                         ignore += 1
             if ignore == 0:
-                export_list.append(row)
+                exclude_list.append(row)
 
-    update("Writing files...")
-    write_out(exclusion_headers_csv, export_list, exclusions_out)
+    update("Writing exclusions...")
+    exclude_count = len(exclude_list)
+    if exclude_count > 0:
+        write_out(exclusion_headers_csv, exclude_list, exclusions_out)
 
-
+    update("Fetching allowed apps...")
     # Pull Global Allowed Applications
     allowed_apps_url = f"{api_host}/endpoint/v1/settings/allowed-items"
     allowed_apps_response = requests.get(allowed_apps_url, headers=headers)
@@ -163,5 +171,9 @@ def process_export(sophos_id, sophos_secret, exclusions_out, allowed_out, status
     else:
         print(f"Failed to retrieve allowed apps: {allowed_apps_response.status_code} – {allowed_apps_response.text}")
 
+    allowed_count = len(allowed_list)
+    if allowed_count > 0:
+        write_out(allowed_headers, allowed_list, allowed_out)
 
-    write_out(allowed_headers, allowed_list, allowed_out)
+
+    return exclude_count, allowed_count
