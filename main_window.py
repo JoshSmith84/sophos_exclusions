@@ -137,8 +137,7 @@ class Ui_MainWindow(object):
         self.sophos_secret = self.secret_input.text().strip()
 
         if self.sophos_id == "" or self.sophos_secret == "":
-            self.update_status_message("Sophos ID or Secret Key is empty. Please paste these values and try again.")
-            self.pushButton_run.setEnabled(True)
+            self.on_error("Sophos ID or Secret Key is empty. Please paste these values and try again.")
             return
 
         # Disable run button to prevent double-clicks
