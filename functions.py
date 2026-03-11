@@ -10,6 +10,17 @@ def write_out(headers_list, input_list, output_file):
         writer.writerows(input_list)
 
 
+def filter_csv_rows(row, filter_list, output_list):
+    ignore = 0
+    for ignore_type in filter_list:
+        for cell in row:
+            if ignore_type.casefold() in cell.casefold():
+                ignore += 1
+    if ignore == 0:
+        output_list.append(row)
+
+
+
 def get_all_items(base_url, headers):
     items = []
     page = 1
@@ -132,13 +143,7 @@ def process_export(sophos_id, sophos_secret, exclusions_out, allowed_out, status
                 item.get("description", ""),
                 item.get("scanMode", ""),   # realTime, scheduled, or both — for path types
             ]
-            ignore = 0
-            for ignore_type in EX_IGNORE:
-                for cell in row:
-                    if ignore_type.casefold() in cell.casefold():
-                        ignore += 1
-            if ignore == 0:
-                exclude_list.append(row)
+            filter_csv_rows(row, EX_IGNORE, exclude_list)
 
     update("Writing exclusions...")
     exclude_count = len(exclude_list)
@@ -153,7 +158,6 @@ def process_export(sophos_id, sophos_secret, exclusions_out, allowed_out, status
     if allowed_apps_response.status_code == 200:
         allowed_apps_data = allowed_apps_response.json()
         for item in allowed_apps_data.get("items", []):
-            ignore = 0
             row = [
                 item.get("properties", {}).get("path"),
                 item.get("type"),
@@ -161,12 +165,7 @@ def process_export(sophos_id, sophos_secret, exclusions_out, allowed_out, status
                 item.get("createdAt", ""),
                 item.get("updatedAt", ""),
             ]
-            for ignore_type in AL_IGNORE:
-                for cell in row:
-                    if ignore_type.casefold() in cell.casefold():
-                        ignore += 1
-            if ignore == 0:
-                allowed_list.append(row)
+            filter_csv_rows(row, AL_IGNORE, allowed_list)
 
     else:
         print(f"Failed to retrieve allowed apps: {allowed_apps_response.status_code} – {allowed_apps_response.text}")
