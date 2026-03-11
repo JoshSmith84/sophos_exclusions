@@ -1,22 +1,25 @@
-# README Template (#TODO)
+# Sophos Exclusions
 
-> Short, clear description of what this project does and why it exists.
+> Use Sophos Central API credential to pull lists for exclusions and allowed apps.
 
 ---
 
 ## Features
 
-- Feature 1 (what problem it solves)
-- Feature 2
-- Feature 3
-- Fast / lightweight / simple (if applicable)
+- Sophos Central has no native way to export exclusions via portal settings.
+- This app leverages the API to accomplish the above
+- Lighter cmd run option coming soon
 
 ---
 
 ## Requirements
 
-- Python 3.9+ (adjust as needed)
-- OS: Windows / macOS / Linux (if relevant)
+### Executable
+- OS: Windows 10 or later
+
+### (Not yet released cmd version)
+- Python 3.11+
+- OS: Windows / macOS / Linux
 
 ---
 
@@ -24,4 +27,8 @@
 
 ### Option 1: 
 
+- Coming soon
+
 ### Option 2:
+
+- Coming Soon
