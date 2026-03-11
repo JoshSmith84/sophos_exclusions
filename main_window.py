@@ -12,66 +12,80 @@ class Ui_MainWindow(object):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(494, 328)
         MainWindow.setWindowOpacity(4.0)
+
         self.main_widget = QtWidgets.QWidget(parent=MainWindow)
         self.main_widget.setObjectName("main_widget")
+
         self.input_frame = QtWidgets.QFrame(parent=self.main_widget)
-        self.input_frame.setGeometry(QtCore.QRect(0, 0, 461, 170))
+        self.input_frame.setGeometry(QtCore.QRect(0, 0, 461, 170)) # x, y, width , height
         self.input_frame.setAutoFillBackground(True)
         self.input_frame.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
         self.input_frame.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.input_frame.setObjectName("input_frame")
+
         font = QtGui.QFont()
         font.setPointSize(12)
+
         self.co_label = QtWidgets.QLabel(parent=self.input_frame)
         self.co_label.setGeometry(QtCore.QRect(20, 5, 231, 16))
         self.co_label.setFont(font)
         self.co_label.setObjectName("co_label")
+
         self.id_label = QtWidgets.QLabel(parent=self.input_frame)
         self.id_label.setGeometry(QtCore.QRect(20, 55, 71, 16))
         self.id_label.setFont(font)
         self.id_label.setObjectName("id_label")
+
         self.secret_label = QtWidgets.QLabel(parent=self.input_frame)
         self.secret_label.setGeometry(QtCore.QRect(20, 105, 101, 16))
         self.secret_label.setFont(font)
         self.secret_label.setObjectName("id_label_2")
+
         self.co_input = QtWidgets.QLineEdit(parent=self.input_frame)
         self.co_input.setGeometry(QtCore.QRect(20, 25, 231, 21))
         self.co_input.setObjectName("co_input")
+
         self.id_input = QtWidgets.QLineEdit(parent=self.input_frame)
         self.id_input.setGeometry(QtCore.QRect(20, 75, 231, 21))
         self.id_input.setObjectName("id_input")
+
         self.secret_input = QtWidgets.QLineEdit(parent=self.input_frame)
         self.secret_input.setGeometry(QtCore.QRect(20, 125, 421, 21))
         self.secret_input.setObjectName("secret_input")
+
         self.button_frame = QtWidgets.QFrame(parent=self.main_widget)
         self.button_frame.setGeometry(QtCore.QRect(0, 175, 141, 121))
         self.button_frame.setAutoFillBackground(True)
         self.button_frame.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
         self.button_frame.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.button_frame.setObjectName("button_frame")
+
         self.pushButton_dir = QtWidgets.QPushButton(parent=self.button_frame)
         self.pushButton_dir.setGeometry(QtCore.QRect(20, 10, 101, 24))
         self.pushButton_dir.setObjectName("pushButton")
+
         self.pushButton_run = QtWidgets.QPushButton(parent=self.button_frame)
         self.pushButton_run.setGeometry(QtCore.QRect(20, 40, 101, 24))
         self.pushButton_run.setObjectName("pushButton_2")
+
         self.pushButton_quit = QtWidgets.QPushButton(parent=self.button_frame)
         self.pushButton_quit.setGeometry(QtCore.QRect(20, 70, 101, 24))
         self.pushButton_quit.setObjectName("pushButton_3")
+
         MainWindow.setCentralWidget(self.main_widget)
+
         self.menubar = QtWidgets.QMenuBar(parent=MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 494, 22))
         self.menubar.setObjectName("menubar")
+
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(parent=MainWindow)
         self.statusbar.setObjectName("statusbar")
         self.statusbar.setStatusTip("")
 
-
         self.selected_folder = Path.home()
         self.sophos_id = ""
         self.sophos_secret = ""
-
 
         self.statusbar.showMessage(
             f"Output Folder: {self.selected_folder}. Click choose folder to change."
@@ -80,7 +94,6 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
-
 
 
     def retranslateUi(self, MainWindow):
@@ -92,6 +105,7 @@ class Ui_MainWindow(object):
         self.pushButton_dir.setText(_translate("MainWindow", "Choose Folder"))
         self.pushButton_run.setText(_translate("MainWindow", "Run"))
         self.pushButton_quit.setText(_translate("MainWindow", "Quit"))
+
         self.pushButton_dir.clicked.connect(self._on_change_dir)
         self.pushButton_run.clicked.connect(self._on_run)
         self.pushButton_quit.clicked.connect(self._on_quit)
@@ -124,6 +138,7 @@ class Ui_MainWindow(object):
 
         if self.sophos_id == "" or self.sophos_secret == "":
             self.update_status_message("Sophos ID or Secret Key is empty. Please paste these values and try again.")
+            self.pushButton_run.setEnabled(True)
             return
 
         # Disable run button to prevent double-clicks
