@@ -20,7 +20,6 @@ def filter_csv_rows(row, filter_list, output_list):
         output_list.append(row)
 
 
-
 def get_all_items(base_url, headers):
     items = []
     page = 1
@@ -61,6 +60,7 @@ def extract_value(item):
         or ""
     )
 
+
 def process_export(sophos_id, sophos_secret, exclusions_out, allowed_out, status_callback=None):
 
     def update(msg):
@@ -68,15 +68,11 @@ def process_export(sophos_id, sophos_secret, exclusions_out, allowed_out, status
             status_callback(msg)
 
     exclude_list = []
+    exclude_headers = ["exclusion_type", "path", "value", "description"]
     allowed_list = []
-    exclude_count = 0
-    allowed_count = 0
+    allowed_headers = ['path', 'type', 'comment', 'created_at', 'updated_at']
 
     update("Authenticating...")
-
-    exclusion_headers = ['type', 'value']
-    allowed_headers = ['path', 'type', 'comment', 'created_at', 'updated_at']
-    params = {"pageSize": 100, "pageTotal": "true"}
 
     #Get Access Token
     auth_url = "https://id.sophos.com/api/v2/oauth2/token"
@@ -87,7 +83,6 @@ def process_export(sophos_id, sophos_secret, exclusions_out, allowed_out, status
         "scope":         "token",
     }
     response = requests.post(auth_url, data=auth_data)
-    headers= ''
     if response.status_code == 200:
         access_token = response.json()["access_token"]
         headers = {
@@ -99,7 +94,6 @@ def process_export(sophos_id, sophos_secret, exclusions_out, allowed_out, status
         print(f"Authentication failed: {response.status_code} – {response.text}")
         update("Authentication failed! Check your Client ID or Client Secret")
         return None, None
-
 
     # get tenantId + correct regional API host
     whoami_url = "https://api.central.sophos.com/whoami/v1"
@@ -117,7 +111,6 @@ def process_export(sophos_id, sophos_secret, exclusions_out, allowed_out, status
         print(whoami_error)
         update(whoami_error)
 
-
     update("Fetching exclusions...")
 
     #  Pull Global Scanning Exclusions
@@ -127,9 +120,6 @@ def process_export(sophos_id, sophos_secret, exclusions_out, allowed_out, status
         "exploits":  f"{api_host}/endpoint/v1/settings/exclusions/exploit-mitigation/applications",
         "amsi":      f"{api_host}/endpoint/v1/settings/exclusions/amsi",
     }
-
-    exclusion_headers_csv = ["exclusion_type", "path", "value", "description"]
-    exclude_list = []
 
     print("\n--- Global Scanning Exclusions ---")
     for excl_type, url in exclusion_endpoints.items():
@@ -148,7 +138,7 @@ def process_export(sophos_id, sophos_secret, exclusions_out, allowed_out, status
     update("Writing exclusions...")
     exclude_count = len(exclude_list)
     if exclude_count > 0:
-        write_out(exclusion_headers_csv, exclude_list, exclusions_out)
+        write_out(exclude_headers, exclude_list, exclusions_out)
 
     update("Fetching allowed apps...")
     # Pull Global Allowed Applications
@@ -173,6 +163,5 @@ def process_export(sophos_id, sophos_secret, exclusions_out, allowed_out, status
     allowed_count = len(allowed_list)
     if allowed_count > 0:
         write_out(allowed_headers, allowed_list, allowed_out)
-
 
     return exclude_count, allowed_count

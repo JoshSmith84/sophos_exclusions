@@ -179,6 +179,3 @@ class Ui_MainWindow(object):
 
     def _on_quit(self):
         sys.exit()
-
-
-
